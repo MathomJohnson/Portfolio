@@ -1,0 +1,58 @@
+---
+description: Motion vocabulary and design tokens for this portfolio site
+alwaysApply: true
+---
+
+# Motion Vocabulary
+
+Every animated element must map to a named animation below. Never invent an
+unnamed one-off effect, and never hardcode an easing, spring, duration, or
+stagger value — import from `lib/motion-tokens.ts`.
+
+```ts
+import { motionTokens, revealTransition, magneticSpring } from "@/lib/motion-tokens";
+// easeSignal [0.16, 1, 0.3, 1] | springMagnetic {150, 15, 0.8}
+// springHover {300, 20} | durationReveal 0.8 | durationMicro 0.2 | staggerBase 0.06
+```
+
+| Name | Effect | Library |
+|---|---|---|
+| `SIGNAL_REVEAL` | `clip-path: inset()` unmask, left to right | Motion |
+| `DECODE_TEXT` | Character scramble resolving left to right | Motion state |
+| `CURSOR_TRACE` | Amber dot + spring-lagged trailing ring | Motion |
+| `MAGNETIC_PULL` | ~10px shift toward cursor within 80px radius | Motion |
+| `ORBIT_RING` | SVG stroke-dasharray ring draw, optional ambient spin | Motion |
+| `WAVE_HOVER` | Sibling row ripple via per-index spring offset | Motion |
+| `SPOTLIGHT_FIELD` | Cursor-following radial gradient via `--x`/`--y` | Vanilla JS + CSS |
+| `SCROLL_TRACE` | Line length bound to scroll progress, nodes light up | GSAP ScrollTrigger |
+| `HORIZONTAL_PIN` | Pinned section, vertical scroll drives translateX | GSAP ScrollTrigger |
+| `TILT_3D` | 3–6° `rotateX`/`rotateY` from cursor offset | Motion |
+| `TAG_STAGGER` | Tags cascade in on card hover | Motion |
+| `SCROLL_CUE` | Looping mono label pulse, dismissed via `useInView` | Motion |
+| `WIPE_MASK` | Directional clip-path wipe for images | Motion |
+| `PARALLAX_DRIFT` | Section-scoped `useScroll`/`useTransform` vertical drift | Motion |
+| `COUNT_UP` | Numeric value animates 0 → target | Motion |
+| `FADE_UP` | Opacity fade + 8px rise, optional per-index stagger | Motion |
+| `ICON_LIFT` | Staggered entry, then 4px hover lift + tertiary→signal color | Motion |
+
+Reusable implementations live in `components/motion/`. Prefer composing an
+existing primitive over writing new animation code.
+
+## Required gating
+
+- Every animation needs a `prefers-reduced-motion: reduce` fallback that resolves
+  to an opacity fade or the static end state. Use `useReducedMotion()` from
+  `motion/react`; `MotionConfig` alone does not cover `clip-path` or GSAP.
+- `CURSOR_TRACE` and `HORIZONTAL_PIN` are fully disabled under reduced motion.
+- `CURSOR_TRACE`, `MAGNETIC_PULL`, `SPOTLIGHT_FIELD`, `TILT_3D`, and interactive
+  `TAG_STAGGER` are pointer-only: gate with `useFinePointer()` from
+  `hooks/useFinePointer.ts` (`(hover: hover) and (pointer: fine)`).
+- Scroll-scrubbed GSAP timelines use `ease: "none"` and are created inside
+  `gsap.matchMedia()` / `gsap.context()` so they clean up correctly.
+
+## Design tokens
+
+Colors, type scale, and layout tokens are CSS custom properties in
+`app/globals.css`, surfaced as Tailwind utilities (`bg-void`, `text-primary`,
+`text-signal`, `border-hairline`, `font-display`, `font-mono`, `text-display-xl`).
+Full reference: `DESIGN.md`.

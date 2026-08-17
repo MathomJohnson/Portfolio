@@ -1,0 +1,303 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Design tokens (see DESIGN.md). These values are the single source of truth
+   for color, type scale, and spacing. Do not hardcode equivalents elsewhere.
+   --------------------------------------------------------------------------- */
+
+:root {
+  /* Color */
+  --bg-void: #0a0a0b; /* primary background, obsidian */
+  --bg-surface: #141416; /* card/panel background */
+  --bg-surface-raised: #1c1c1f; /* hover/active surface */
+
+  --text-primary: #f2f1ed; /* warm off-white, not pure #FFF */
+  --text-secondary: #9a9a9f; /* body copy, secondary emphasis */
+  --text-tertiary: #5c5c61; /* captions, mono labels, low emphasis */
+
+  --accent-signal: #e8a33d; /* signature warm amber — "phosphor" accent */
+  --accent-signal-soft: rgba(232, 163, 61, 0.14); /* glow fields, spotlights */
+  --accent-signal-dim: #7a5726; /* borders/dividers at low intensity */
+
+  --border-hairline: rgba(242, 241, 237, 0.08);
+  --border-hairline-strong: rgba(242, 241, 237, 0.16);
+
+  /* Type scale — fluid via clamp() down to mobile */
+  --type-display-xl: clamp(3rem, 8vw, 6.5rem);
+  --type-display-l: clamp(2rem, 5vw, 3.5rem);
+  --type-body-l: 1.125rem;
+  --type-body: 1rem;
+  --type-mono-label: 0.8125rem;
+
+  /* Motion — mirrors durationMicro and easeSignal in lib/motion-tokens.ts */
+  --duration-micro: 200ms;
+  --ease-signal: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Layout — 8px base unit scale */
+  --space-unit: 0.5rem;
+  --section-padding-block: min(10vh, 96px);
+  --section-padding-inline: clamp(1.5rem, 5vw, 6rem);
+  --section-max-width: 76rem;
+}
+
+/* Pointer-only affordances. CURSOR_TRACE, MAGNETIC_PULL, SPOTLIGHT_FIELD and
+   TILT_3D are absent on touch rather than degraded. */
+@custom-variant pointer-fine (@media (hover: hover) and (pointer: fine));
+
+@theme inline {
+  --color-void: var(--bg-void);
+  --color-surface: var(--bg-surface);
+  --color-surface-raised: var(--bg-surface-raised);
+
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-tertiary: var(--text-tertiary);
+
+  --color-signal: var(--accent-signal);
+  --color-signal-soft: var(--accent-signal-soft);
+  --color-signal-dim: var(--accent-signal-dim);
+
+  --color-hairline: var(--border-hairline);
+  --color-hairline-strong: var(--border-hairline-strong);
+
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-general-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  --text-display-xl: var(--type-display-xl);
+  --text-display-l: var(--type-display-l);
+  --text-body-l: var(--type-body-l);
+  --text-body: var(--type-body);
+  --text-mono-label: var(--type-mono-label);
+}
+
+@layer base {
+  * {
+    min-width: 0;
+  }
+
+  html {
+    background-color: var(--bg-void);
+    color-scheme: dark;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--bg-void);
+    color: var(--text-secondary);
+    font-family: var(--font-general-sans), ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--type-body);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+    color: var(--text-primary);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background-color: var(--accent-signal-soft);
+    color: var(--text-primary);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent-signal);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+
+  img,
+  svg {
+    display: block;
+  }
+}
+
+@layer components {
+  /* Every section is a full viewport block with safe padding so content never
+     touches the viewport edge on short screens. svh, not vh, to avoid mobile
+     browser chrome jump. */
+  .section-shell {
+    position: relative;
+    display: flex;
+    min-height: 100svh;
+    width: 100%;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: var(--section-padding-block);
+  }
+
+  .section-inner {
+    width: 100%;
+    max-width: var(--section-max-width);
+    margin-inline: auto;
+    padding-inline: var(--section-padding-inline);
+  }
+
+  .display-xl {
+    font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--type-display-xl);
+    font-weight: 600;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+  }
+
+  .display-l {
+    font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--type-display-l);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+  }
+
+  .body-l {
+    font-size: var(--type-body-l);
+    line-height: 1.7;
+  }
+
+  /* Mono labels render at --text-secondary rather than --text-tertiary.
+     --text-tertiary is 2.97:1 against --bg-void, which fails the 4.5:1 minimum
+     for text at this size. Tertiary is still used for icons and hairline-level
+     accents, where the 3:1 non-text threshold applies. */
+  .mono-label {
+    font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+    font-size: var(--type-mono-label);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+  }
+
+  .hairline-top {
+    border-top: 1px solid var(--border-hairline);
+  }
+
+  /* Hover tint transition. Deliberately narrower than Tailwind's
+     transition-colors, which also covers outline-color and would make the
+     focus ring fade in from the element's text colour. */
+  .transition-tint {
+    transition-property: color, background-color, border-color;
+    transition-duration: var(--duration-micro);
+    transition-timing-function: var(--ease-signal);
+  }
+
+  /* SPOTLIGHT_FIELD. The container glow tracks --x/--y; each item brightens
+     from its resting state as --proximity rises. Both properties are written by
+     SpotlightField.tsx and are only ever set on pointer-fine devices, so the
+     resting state below is what touch users see. */
+  .spotlight-field {
+    position: relative;
+  }
+
+  .spotlight-field::before {
+    content: "";
+    position: absolute;
+    /* Kept inside the container: an inset bleed would push past the viewport
+       edge and create horizontal overflow on narrow screens. */
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: var(--spotlight-opacity, 0);
+    transition: opacity 240ms ease-out;
+    background: radial-gradient(
+      18rem circle at var(--x, -100rem) var(--y, -100rem),
+      var(--accent-signal-soft),
+      transparent 70%
+    );
+  }
+
+  .spotlight-field > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* SCROLL_TRACE nodes. data-active is toggled by the Experience scrub timeline
+     as each card reaches the centre of the pinned viewport. */
+  [data-trace-node] {
+    background-color: var(--bg-void);
+    border-color: var(--border-hairline-strong);
+    transition:
+      background-color 200ms ease-out,
+      border-color 200ms ease-out,
+      box-shadow 200ms ease-out;
+  }
+
+  [data-trace-node][data-active="true"] {
+    background-color: var(--accent-signal);
+    border-color: var(--accent-signal);
+    box-shadow: 0 0 12px 2px var(--accent-signal-soft);
+  }
+
+  /* The Experience section only pins on wide, hovering, fine-pointer devices
+     that have not asked for reduced motion. These two rules and the
+     gsap.matchMedia query in useExperienceScroll.ts must stay in step, so the
+     pinned tree is never displayed without its scroll timeline. */
+  .experience-desktop {
+    display: none;
+  }
+
+  .experience-mobile {
+    display: block;
+  }
+
+  @media (min-width: 768px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .experience-desktop {
+      display: block;
+    }
+
+    .experience-mobile {
+      display: none;
+    }
+  }
+
+  [data-spotlight-item] {
+    --proximity: 0;
+    color: color-mix(
+      in oklab,
+      var(--text-secondary),
+      var(--text-primary) calc(var(--proximity) * 100%)
+    );
+    border-color: color-mix(
+      in oklab,
+      var(--border-hairline),
+      var(--accent-signal-dim) calc(var(--proximity) * 100%)
+    );
+    background-color: color-mix(
+      in oklab,
+      var(--bg-surface),
+      var(--bg-surface-raised) calc(var(--proximity) * 100%)
+    );
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion safety net. Components also gate motion in JavaScript via
+   useReducedMotion / gsap.matchMedia; this block covers CSS-driven motion and
+   the window before hydration.
+   --------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
