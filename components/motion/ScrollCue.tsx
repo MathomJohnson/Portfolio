@@ -45,7 +45,7 @@ export function ScrollCue({ targetId, label = "Scroll" }: ScrollCueProps) {
   return (
     <motion.div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-x-0 bottom-8 flex flex-col items-center gap-3"
+      className="pointer-events-none absolute inset-x-0 bottom-8 hidden flex-col items-center gap-3 md:flex"
       initial={{ opacity: 0 }}
       animate={{ opacity: dismissed ? 0 : 1 }}
       transition={microTransition()}

@@ -16,14 +16,10 @@ interface SkillGridProps {
  * last completed one is active, so the sequence is driven by completion rather
  * than by precomputed delays — a long column cannot be overtaken by the next.
  *
- * Three columns from `lg` up (three, then the remaining two on the next row).
- * Stacked below that. A two-column middle step is fine now that there are five
- * groups; it no longer leaves a single leftover column.
- *
- * The desktop row is `1fr auto 1fr`: the first dump lines up with the section
- * title, the middle dump sits on the content midpoint, and the third dump
- * packs to the right edge so both outer columns sit the same distance from
- * the center.
+ * Two equal columns below `lg` (two, two, then one). From `lg` up the row is
+ * `1fr auto 1fr`: the first dump lines up with the section title, the middle
+ * dump sits on the content midpoint, and the third dump packs to the right
+ * edge so both outer columns sit the same distance from the center.
  */
 export function SkillGrid({ categories }: SkillGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -38,7 +34,7 @@ export function SkillGrid({ categories }: SkillGridProps) {
   return (
     <div
       ref={containerRef}
-      className="grid w-full grid-cols-1 gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-[1fr_auto_1fr] lg:[&>:nth-child(3n+3)]:justify-self-end"
+      className="grid w-full grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-[1fr_auto_1fr] lg:gap-x-10 lg:gap-y-10 lg:[&>:nth-child(3n+3)]:justify-self-end"
     >
       {categories.map((category, index) => (
         <TerminalPrint
