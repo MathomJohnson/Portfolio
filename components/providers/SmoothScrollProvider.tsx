@@ -44,6 +44,7 @@ export function SmoothScrollProvider({
         smoothWheel: true,
         orientation: "vertical",
         autoRaf: false,
+        anchors: true,
       });
 
       lenis.on("scroll", ScrollTrigger.update);

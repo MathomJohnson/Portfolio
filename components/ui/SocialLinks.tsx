@@ -16,8 +16,7 @@ const glyphSizeClasses = {
 
 /**
  * Icon-only social row. Rendered through WaveHoverGroup so hovering one icon
- * ripples across its siblings (WAVE_HOVER). Used in Hero and mirrored in the
- * Contact footer as a deliberate bookend.
+ * ripples across its siblings (WAVE_HOVER). Used in Hero.
  *
  * Every target is 44px so touch devices get an adequate hit area.
  */

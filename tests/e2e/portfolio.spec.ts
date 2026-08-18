@@ -2,6 +2,83 @@ import { expect, test, type Page } from "@playwright/test";
 
 const SECTION_ORDER = ["hero", "about", "skills", "experience", "contact"];
 
+/**
+ * Horizontal component of the drift AuraFollow applies to its outermost layer.
+ * The transform sits on the layer's parent: the parent carries the cursor
+ * drift, the layer itself carries the CSS shape animation.
+ */
+function auraDriftX(page: Page) {
+  return page.evaluate(() => {
+    const layer = document.querySelector("#hero .aura-layer--glow");
+    if (!layer?.parentElement) return null;
+
+    const { transform } = getComputedStyle(layer.parentElement);
+    return transform === "none" ? 0 : new DOMMatrix(transform).m41;
+  });
+}
+
+/**
+ * Skill lines that TERMINAL_PRINT has already printed. Unprinted lines stay in
+ * the DOM with `visibility: hidden` so the column reserves its height, which is
+ * exactly what Playwright's visibility check filters out.
+ */
+function printedLines(page: Page, filename: string) {
+  return page
+    .locator(`[data-terminal-column="${filename}"] li:visible`)
+    .count();
+}
+
+/**
+ * Horizontal extent of everything actually drawn in the hero, plus the centre of
+ * the scroll cue to compare it against.
+ *
+ * Measured from text ranges rather than element boxes. A wrapped heading's box
+ * is as wide as the space it was offered; its client rects are only as wide as
+ * the glyphs painted. Asserting on boxes is what let a visibly off-centre hero
+ * pass previously.
+ *
+ * Runs in the browser via page.evaluate, so it has to be self-contained.
+ */
+function measureHeroInk() {
+  const scope = document.querySelector("#hero .section-inner")!;
+  let left = Infinity;
+  let right = -Infinity;
+
+  const extend = (rect: DOMRect) => {
+    if (rect.width <= 0 || rect.height <= 0) return;
+    left = Math.min(left, rect.left);
+    right = Math.max(right, rect.right);
+  };
+
+  const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (!node.textContent?.trim()) continue;
+    if (node.parentElement?.closest(".sr-only")) continue;
+
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    for (const rect of Array.from(range.getClientRects())) extend(rect);
+  }
+
+  // The portrait and the bordered links paint past their text.
+  for (const element of Array.from(scope.querySelectorAll("img, a"))) {
+    extend(element.getBoundingClientRect());
+  }
+
+  const cue = document
+    .querySelector("#hero > [aria-hidden='true']")!
+    .querySelector(".mono-label")!
+    .getBoundingClientRect();
+
+  return {
+    left,
+    right,
+    cueCentre: (cue.left + cue.right) / 2,
+    viewportWidth: window.innerWidth,
+  };
+}
+
 /** Fails the test if the page logs an error or throws while loading. */
 function collectPageErrors(page: Page) {
   const errors: string[] = [];
@@ -38,7 +115,11 @@ test.describe("content and structure", () => {
 
     await expect(page.locator("h1")).toHaveText(/\S/);
     await expect(
-      page.getByText("CS + Data Science @ UW–Madison", { exact: false }).first(),
+      page
+        .getByText("Computer Science & Data Science @ UW—Madison", {
+          exact: false,
+        })
+        .first(),
     ).toBeAttached();
 
     await expect(
@@ -50,6 +131,66 @@ test.describe("content and structure", () => {
       .first()
       .getByRole("link");
     await expect(heroSocials).toHaveCount(3);
+    await expect(
+      page.getByRole("link", { name: "YouTube channel" }),
+    ).toHaveAttribute(
+      "href",
+      "https://www.youtube.com/channel/UCPgHcSZgy6dNjFx23H2LWQg",
+    );
+    await expect(page.locator("#hero a[href^='mailto:']")).toHaveCount(0);
+  });
+
+  test("the hero photo and copy are centred as one group", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name === "mobile", "two-column layout only");
+
+    await page.goto("/");
+
+    // Checked at several widths because the failure mode is width-dependent:
+    // the copy column only over-reports its width while there is leftover space
+    // for it to be handed.
+    for (const width of [768, 1024, 1280, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.waitForTimeout(150);
+
+      const ink = await page.evaluate(measureHeroInk);
+
+      const inkCentre = (ink.left + ink.right) / 2;
+      expect(
+        Math.abs(inkCentre - ink.viewportWidth / 2),
+        `hero ink should be centred at ${width}px`,
+      ).toBeLessThan(8);
+
+      // The scroll cue is the reference the mismatch is visible against, so it
+      // is asserted directly rather than assumed to be at the centre.
+      expect(
+        Math.abs(inkCentre - ink.cueCentre),
+        `hero ink should line up with the scroll cue at ${width}px`,
+      ).toBeLessThan(8);
+    }
+  });
+
+  test("the subtitle decode is still resolving well past two seconds", async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name === "reduced-motion",
+      "the scramble does not run under reduced motion",
+    );
+
+    const start = Date.now();
+    await page.goto("/");
+
+    const subtitle = page.locator('#hero p span[aria-hidden="true"]');
+    const resolved = "Computer Science & Data Science @ UW—Madison";
+
+    // The 2.6s mark discriminates the intended pace from the old one: at the
+    // previous fixed 0.035s per character the line had already settled by ~2.1s.
+    await page.waitForTimeout(Math.max(0, 2600 - (Date.now() - start)));
+    expect(await subtitle.textContent()).not.toBe(resolved);
+
+    await expect(subtitle).toHaveText(resolved, { timeout: 6000 });
   });
 
   test("every experience entry is reachable in the rendered layout", async ({
@@ -61,8 +202,9 @@ test.describe("content and structure", () => {
       "Plexus",
       "U.S. Bank",
       "Praxora Education, Inc.",
+      "Morgridge Institute for Research",
       "Ehrlich Lab, UW–Madison",
-      "PersonaXR (UW Tech Exploration Lab)",
+      "WEC Energy Group",
     ];
 
     for (const organization of organizations) {
@@ -70,9 +212,13 @@ test.describe("content and structure", () => {
         page.getByRole("heading", { name: organization }),
       ).toHaveCount(1);
     }
+
+    await expect(
+      page.locator("#experience img[alt$='logo']").filter({ visible: true }),
+    ).toHaveCount(6);
   });
 
-  test("contact offers a mailto action and mirrors the hero social row", async ({
+  test("contact offers a mailto action, LinkedIn, and a back-to-top control", async ({
     page,
   }) => {
     await page.goto("/");
@@ -80,11 +226,13 @@ test.describe("content and structure", () => {
     const mailto = page.locator('#contact a[href^="mailto:"]').first();
     await expect(mailto).toBeVisible();
 
-    const footerSocials = page
-      .locator("#contact")
-      .getByRole("list", { name: "Social links" })
-      .getByRole("link");
-    await expect(footerSocials).toHaveCount(3);
+    await expect(
+      page.locator("#contact").getByRole("list", { name: "Social links" }),
+    ).toHaveCount(0);
+
+    const backToTop = page.getByRole("link", { name: "Back to top" });
+    await expect(backToTop).toBeVisible();
+    await expect(backToTop).toHaveAttribute("href", "#hero");
   });
 
   test("sections are at least a full viewport tall", async ({ page }) => {
@@ -230,7 +378,7 @@ test.describe("mobile", () => {
     const pinned = await page.locator("#experience .pin-spacer").count();
     expect(pinned).toBe(0);
 
-    await expect(page.locator("#experience ol > li")).toHaveCount(5);
+    await expect(page.locator("#experience ol > li")).toHaveCount(6);
   });
 
   test("tags are visible without hover", async ({ page }, testInfo) => {
@@ -269,6 +417,26 @@ test.describe("reduced motion", () => {
     await page.mouse.move(500, 400);
     await page.waitForTimeout(200);
     expect(await page.locator("div.fixed.inset-0.z-50 > span").count()).toBe(0);
+  });
+
+  test("the hero aura renders but does not track the cursor", async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name !== "reduced-motion",
+      "reduced-motion project only",
+    );
+
+    await page.goto("/");
+
+    // Present, unlike the pointer-only affordances: the aura is part of the
+    // hero's composition, so reduced motion stills it rather than removing it.
+    await expect(page.locator("#hero .aura-layer--glow")).toHaveCount(1);
+
+    await page.mouse.move(1380, 400);
+    await page.waitForTimeout(600);
+
+    expect(await auraDriftX(page)).toBe(0);
   });
 
   test("scroll position responds normally", async ({ page }, testInfo) => {
@@ -330,29 +498,98 @@ test.describe("desktop signature interactions", () => {
       .count();
 
     expect(activeNodes).toBeGreaterThan(1);
+    expect(await page.locator("[data-trace-node]").count()).toBe(6);
+    expect(
+      await page.locator(".experience-desktop .w-24").count(),
+    ).toBe(0);
   });
 
-  test("spotlight field writes cursor coordinates", async ({
+  test("the skills columns print one after another, left to right", async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name === "reduced-motion",
+      "reduced motion resolves every column at once",
+    );
+
+    await page.goto("/");
+    await page.locator("#skills").scrollIntoViewIfNeeded();
+
+    // The last column starting is the ordering assertion: by the time it prints
+    // anything, the first column must already be finished. Polling rather than
+    // sampling a fixed delay keeps this independent of when the section is
+    // scrolled into view.
+    await expect
+      .poll(() => printedLines(page, "tools"), { timeout: 20_000 })
+      .toBeGreaterThan(0);
+
+    expect(await printedLines(page, "languages")).toBe(9);
+
+    for (const filename of [
+      "languages",
+      "frameworks",
+      "databases",
+      "infra",
+      "tools",
+    ]) {
+      await expect(
+        page.locator(`[data-terminal-column="${filename}"] p`),
+      ).toHaveText(`$ cat ${filename}`, { timeout: 20_000 });
+    }
+
+    await expect
+      .poll(() => printedLines(page, "tools"), { timeout: 15_000 })
+      .toBe(5);
+  });
+
+  test("reduced motion shows the finished dump without the print", async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name !== "reduced-motion",
+      "reduced-motion project only",
+    );
+
+    await page.goto("/");
+    await page.locator("#skills").scrollIntoViewIfNeeded();
+
+    // Well inside the animated timeline, which takes several seconds to reach
+    // the last column.
+    await page.waitForTimeout(400);
+
+    expect(await printedLines(page, "languages")).toBe(9);
+    expect(await printedLines(page, "frameworks")).toBe(9);
+    expect(await printedLines(page, "databases")).toBe(5);
+    expect(await printedLines(page, "infra")).toBe(7);
+    expect(await printedLines(page, "tools")).toBe(5);
+  });
+
+  test("the hero aura leans toward the cursor and the portrait stays put", async ({
     page,
   }, testInfo) => {
     test.skip(testInfo.project.name !== "desktop", "desktop project only");
 
     await page.goto("/");
+    await expect(page.locator("#hero .aura-layer--glow")).toHaveCount(1);
 
-    const field = page.locator(".spotlight-field");
-    await field.scrollIntoViewIfNeeded();
+    const photo = page.locator("#hero img");
+    const photoAtRest = await photo.boundingBox();
 
-    const box = await field.boundingBox();
-    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
-    await page.waitForTimeout(200);
+    await page.mouse.move(60, 400);
+    await page.waitForTimeout(900);
+    const pulledLeft = await auraDriftX(page);
 
-    const custom = await field.evaluate((element) => ({
-      x: element.style.getPropertyValue("--x"),
-      opacity: element.style.getPropertyValue("--spotlight-opacity"),
-    }));
+    await page.mouse.move(1380, 400);
+    await page.waitForTimeout(900);
+    const pulledRight = await auraDriftX(page);
 
-    expect(custom.x).not.toBe("");
-    expect(custom.opacity).toBe("1");
+    expect(pulledLeft).toBeLessThan(0);
+    expect(pulledRight).toBeGreaterThan(0);
+
+    // Only the light moves. The portrait is not magnetic any more.
+    const photoAfter = await photo.boundingBox();
+    expect(photoAfter!.x).toBeCloseTo(photoAtRest!.x, 0);
+    expect(photoAfter!.y).toBeCloseTo(photoAtRest!.y, 0);
   });
 
   test("cursor trace mounts on pointer devices", async ({ page }, testInfo) => {

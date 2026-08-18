@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useRef } from "react";
 import { FadeUp } from "@/components/motion/FadeUp";
 import { ParallaxDrift } from "@/components/motion/ParallaxDrift";
-import { ScrollCue } from "@/components/motion/ScrollCue";
 import { SignalReveal } from "@/components/motion/SignalReveal";
 import { WipeMask } from "@/components/motion/WipeMask";
 import { InterestRow } from "@/components/ui/InterestRow";
@@ -68,8 +67,6 @@ export function About() {
           </div>
         </div>
       </div>
-
-      <ScrollCue targetId={sectionIds.skills} />
     </section>
   );
 }

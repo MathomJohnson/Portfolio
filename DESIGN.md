@@ -20,7 +20,7 @@ precise reveals), not marketing flourish.
 --text-tertiary: #5C5C61;        /* captions, mono labels, low emphasis */
 
 --accent-signal: #E8A33D;        /* signature warm amber — "phosphor" accent */
---accent-signal-soft: rgba(232, 163, 61, 0.14);  /* glow fields, spotlight backgrounds */
+--accent-signal-soft: rgba(232, 163, 61, 0.14);  /* glow fields, cursor bloom */
 --accent-signal-dim: #7A5726;    /* borders/dividers at low intensity */
 
 --border-hairline: rgba(242, 241, 237, 0.08);
@@ -80,9 +80,16 @@ export const motionTokens = {
   springHover: { stiffness: 300, damping: 20 },
   durationReveal: 0.8,
   durationMicro: 0.2,
+  durationDecode: 3.5,       // DECODE_TEXT, whole-string resolve time
   staggerBase: 0.06,
+  terminalCharMs: 38,        // TERMINAL_PRINT, per typed prompt character
+  terminalLineMs: 90,        // TERMINAL_PRINT, per printed line
+  terminalColumnGapMs: 260,  // TERMINAL_PRINT, beat between columns
 };
 ```
+
+`TERMINAL_PRINT`'s values are in milliseconds because it is driven by timers
+rather than by Motion transitions; everything else here is in seconds.
 
 All components import these from `lib/motion-tokens.ts` rather than hardcoding
 spring/easing values inline — this is what keeps every animation on the page
@@ -99,9 +106,9 @@ these. Do not invent unnamed one-off effects.
 | `DECODE_TEXT` | Character-scramble resolving to real text, left-to-right wave | Custom (Motion for state) | mount or scroll-into-view |
 | `CURSOR_TRACE` | Custom cursor: small dot + spring-lagged trailing ring, amber | Motion | site-wide, pointer devices only |
 | `MAGNETIC_PULL` | Element shifts up to ~10px toward cursor within an 80px radius, springs back on leave | Motion | hover/proximity |
-| `ORBIT_RING` | SVG stroke-dasharray draws a ring around an element on mount; optional slow ambient rotation after | Motion (or CSS) | mount |
+| `AURA_FOLLOW` | Layered blurred amber gradients behind an element, breathing on their own and leaning toward the cursor's side of the viewport; the element itself stays still | Motion + CSS | mount + pointer move, pointer devices only |
 | `WAVE_HOVER` | Sibling group hover with per-index spring offset, producing a ripple across a row | Motion | hover |
-| `SPOTLIGHT_FIELD` | Radial gradient follows cursor via CSS custom properties (`--x`/`--y`, rAF-throttled), brightens nearby elements in an otherwise dimmed grid | Custom (vanilla JS + CSS) | mousemove within section |
+| `TERMINAL_PRINT` | A shell prompt types itself out character by character, then the lines under it print a whole line at a time, as `cat` would dump a file. Columns run in sequence: each starts only once the previous one has finished | Custom (timers + CSS) | scroll-into-view |
 | `SCROLL_TRACE` | A line whose fill/length is bound to scroll progress, with nodes that light up as they cross center-viewport | GSAP ScrollTrigger | scroll (scrubbed) |
 | `HORIZONTAL_PIN` | Section pins at 100svh; vertical scroll input drives horizontal translateX through a row of cards | GSAP ScrollTrigger | scroll (scrubbed, pinned) |
 | `TILT_3D` | Card tilts in 3D (`rotateX`/`rotateY`, max 3–6°) based on cursor position relative to card center, via CSS `perspective` | Motion | hover, pointer devices only |
@@ -125,27 +132,36 @@ fallback that resolves to a simple opacity fade or the static end-state, no
 exceptions. `CURSOR_TRACE` and `HORIZONTAL_PIN` are fully disabled (not just
 simplified) under reduced motion.
 
-**Touch devices**: `CURSOR_TRACE`, `MAGNETIC_PULL`, `SPOTLIGHT_FIELD`, and
-`TILT_3D` are pointer-only (`@media (hover: hover) and (pointer: fine)`) —
-gracefully absent on touch, not degraded. `TAG_STAGGER` gets a touch fallback:
+**Touch devices**: `CURSOR_TRACE`, `MAGNETIC_PULL`, and `TILT_3D` are
+pointer-only (`@media (hover: hover) and (pointer: fine)`) — gracefully absent
+on touch, not degraded. `TAG_STAGGER` gets a touch fallback:
 tags render statically, with no stagger, below the pointer-fine breakpoint,
 since there's no hover state to trigger it.
 
+`AURA_FOLLOW` splits the difference: the aura is part of the hero's composition
+rather than an affordance, so it always renders. Only its cursor tracking and
+shape breathing are gated, leaving touch and reduced-motion visitors the aura at
+its resting position.
+
 ## Signature-moment budget
 
-`CURSOR_TRACE`, `HORIZONTAL_PIN`/`SCROLL_TRACE`, and `SPOTLIGHT_FIELD` are the
+`CURSOR_TRACE`, `HORIZONTAL_PIN`/`SCROLL_TRACE`, and `TERMINAL_PRINT` are the
 three memorable interactions on this page. Everything else (reveals, hovers,
 wipes) stays quiet and consistent rather than competing for attention.
+
+`TERMINAL_PRINT` is the one signature moment that is not pointer-gated: it is
+driven by scroll position, so touch visitors get it in full rather than losing a
+third of the page's character.
 
 ## Section motion map
 
 | Section | Assignments |
 |---|---|
-| Hero | `ORBIT_RING` (headshot), `MAGNETIC_PULL` (headshot frame, resume button), `SIGNAL_REVEAL` (name), `DECODE_TEXT` (subtitle), `WAVE_HOVER` (social row), `SCROLL_CUE` |
+| Hero | `AURA_FOLLOW` (headshot), `MAGNETIC_PULL` (resume button), `SIGNAL_REVEAL` (name), `DECODE_TEXT` (subtitle), `WAVE_HOVER` (social row), `SCROLL_CUE` |
 | About | `PARALLAX_DRIFT` + `WIPE_MASK` (photo), `SIGNAL_REVEAL` (heading), `FADE_UP` (bio lines), `ICON_LIFT` (interest row), `SCROLL_CUE` |
-| Skills | `SPOTLIGHT_FIELD` (grid), `SIGNAL_REVEAL` (heading), `FADE_UP` (category eyebrows) |
+| Skills | `TERMINAL_PRINT` (columns, left to right), `SIGNAL_REVEAL` (heading) |
 | Experience | `HORIZONTAL_PIN`, `SCROLL_TRACE`, `SIGNAL_REVEAL` (role/title), `FADE_UP` (bullets), `TILT_3D` (card hover), `TAG_STAGGER` (tag rows) |
-| Contact | `SIGNAL_REVEAL` (closing line), `MAGNETIC_PULL` (mailto + LinkedIn), `WAVE_HOVER` (footer social row) |
+| Contact | `SIGNAL_REVEAL` (closing line), `MAGNETIC_PULL` (mailto + LinkedIn) |
 
 ## Accessibility non-negotiables
 

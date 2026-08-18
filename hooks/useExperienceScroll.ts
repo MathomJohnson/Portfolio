@@ -23,8 +23,6 @@ interface UseExperienceScrollOptions {
   trackRef: RefObject<HTMLDivElement | null>;
   /** The SCROLL_TRACE fill. */
   traceFillRef: RefObject<HTMLSpanElement | null>;
-  /** The thin progress bar shown in place of a scroll cue. */
-  progressFillRef: RefObject<HTMLSpanElement | null>;
   /** The SCROLL_TRACE nodes, in order. */
   nodeRefs: RefObject<(HTMLSpanElement | null)[]>;
   count: number;
@@ -34,17 +32,16 @@ interface UseExperienceScrollOptions {
  * Owns HORIZONTAL_PIN and SCROLL_TRACE for the Experience section.
  *
  * One scrubbed timeline drives everything — the horizontal translation, the
- * trace fill, the node states and the progress bar — so the visuals cannot drift
- * apart from the cards. The scroll distance is derived from the track's actual
- * overflow and recomputed on refresh, so it stays correct when fonts, images or
- * a resize change the track width.
+ * trace fill and the node states — so the visuals cannot drift apart from the
+ * cards. The scroll distance is derived from the track's actual overflow and
+ * recomputed on refresh, so it stays correct when fonts, images or a resize
+ * change the track width.
  */
 export function useExperienceScroll({
   pinRef,
   viewportRef,
   trackRef,
   traceFillRef,
-  progressFillRef,
   nodeRefs,
   count,
 }: UseExperienceScrollOptions) {
@@ -92,7 +89,6 @@ export function useExperienceScroll({
 
       timeline.to(track, { x: () => -distance() }, 0);
       timeline.fromTo(traceFillRef.current, { scaleX: 0 }, { scaleX: 1 }, 0);
-      timeline.fromTo(progressFillRef.current, { scaleX: 0 }, { scaleX: 1 }, 0);
 
       setActiveNode(0);
 
@@ -108,7 +104,6 @@ export function useExperienceScroll({
     count,
     nodeRefs,
     pinRef,
-    progressFillRef,
     traceFillRef,
     trackRef,
     viewportRef,

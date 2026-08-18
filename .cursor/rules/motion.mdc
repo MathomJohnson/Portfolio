@@ -13,6 +13,8 @@ stagger value — import from `lib/motion-tokens.ts`.
 import { motionTokens, revealTransition, magneticSpring } from "@/lib/motion-tokens";
 // easeSignal [0.16, 1, 0.3, 1] | springMagnetic {150, 15, 0.8}
 // springHover {300, 20} | durationReveal 0.8 | durationMicro 0.2 | staggerBase 0.06
+// springAura {26, 20, 1.4} | auraMaxOffset 22px | durationDecode 3.5
+// terminalCharMs 38 | terminalLineMs 90 | terminalColumnGapMs 260 (milliseconds)
 ```
 
 | Name | Effect | Library |
@@ -21,9 +23,9 @@ import { motionTokens, revealTransition, magneticSpring } from "@/lib/motion-tok
 | `DECODE_TEXT` | Character scramble resolving left to right | Motion state |
 | `CURSOR_TRACE` | Amber dot + spring-lagged trailing ring | Motion |
 | `MAGNETIC_PULL` | ~10px shift toward cursor within 80px radius | Motion |
-| `ORBIT_RING` | SVG stroke-dasharray ring draw, optional ambient spin | Motion |
+| `AURA_FOLLOW` | Blurred amber gradient layers drift toward the cursor's side | Motion + CSS |
 | `WAVE_HOVER` | Sibling row ripple via per-index spring offset | Motion |
-| `SPOTLIGHT_FIELD` | Cursor-following radial gradient via `--x`/`--y` | Vanilla JS + CSS |
+| `TERMINAL_PRINT` | Prompt types out, then lines print one at a time; columns run in sequence | Timers + CSS |
 | `SCROLL_TRACE` | Line length bound to scroll progress, nodes light up | GSAP ScrollTrigger |
 | `HORIZONTAL_PIN` | Pinned section, vertical scroll drives translateX | GSAP ScrollTrigger |
 | `TILT_3D` | 3–6° `rotateX`/`rotateY` from cursor offset | Motion |
@@ -44,9 +46,13 @@ existing primitive over writing new animation code.
   to an opacity fade or the static end state. Use `useReducedMotion()` from
   `motion/react`; `MotionConfig` alone does not cover `clip-path` or GSAP.
 - `CURSOR_TRACE` and `HORIZONTAL_PIN` are fully disabled under reduced motion.
-- `CURSOR_TRACE`, `MAGNETIC_PULL`, `SPOTLIGHT_FIELD`, `TILT_3D`, and interactive
+- `CURSOR_TRACE`, `MAGNETIC_PULL`, `TILT_3D`, `AURA_FOLLOW`, and interactive
   `TAG_STAGGER` are pointer-only: gate with `useFinePointer()` from
   `hooks/useFinePointer.ts` (`(hover: hover) and (pointer: fine)`).
+- `TERMINAL_PRINT` is scroll-triggered, not pointer-gated: it runs on touch too.
+  Under reduced motion it resolves to the finished output with no typing.
+- `AURA_FOLLOW`'s cursor response is pointer-only, but the aura itself always
+  renders. Touch and reduced motion show it at rest, not removed.
 - Scroll-scrubbed GSAP timelines use `ease: "none"` and are created inside
   `gsap.matchMedia()` / `gsap.context()` so they clean up correctly.
 

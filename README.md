@@ -54,11 +54,14 @@ tests/e2e/             Playwright specs and the screenshot capture pass
 ## Accessibility and motion behaviour
 
 - `prefers-reduced-motion: reduce` disables smooth scroll, the custom cursor, the
-  Experience pin, parallax, scramble, and every decorative transform. Content
-  resolves to a plain opacity fade or its static end state.
-- The custom cursor, magnetic pull, spotlight field, 3D tilt, and the hover tag
-  cascade mount only for `(hover: hover) and (pointer: fine)`. Touch devices get
-  complete static content rather than a degraded effect.
+  Experience pin, parallax, scramble, the Skills terminal print, and every
+  decorative transform. Content resolves to a plain opacity fade or its static
+  end state.
+- The custom cursor, magnetic pull, 3D tilt, and the hover tag cascade mount only
+  for `(hover: hover) and (pointer: fine)`. Touch devices get complete static
+  content rather than a degraded effect. The Skills terminal print is the
+  exception among the signature effects: it is scroll-triggered, so it runs
+  everywhere.
 - Experience has two real layouts. The pinned horizontal sequence renders only on
   wide, hovering, fine-pointer devices without a reduced-motion preference;
   everything else gets a vertical list. The CSS media query in `globals.css` and

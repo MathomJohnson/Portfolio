@@ -28,7 +28,6 @@ export function DesktopExperience({
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const traceFillRef = useRef<HTMLSpanElement>(null);
-  const progressFillRef = useRef<HTMLSpanElement>(null);
   const nodeRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
   const registerNode = useCallback(
@@ -43,7 +42,6 @@ export function DesktopExperience({
     viewportRef,
     trackRef,
     traceFillRef,
-    progressFillRef,
     nodeRefs,
     count: entries.length,
   });
@@ -59,10 +57,16 @@ export function DesktopExperience({
           <h2 className="display-l mt-4">{heading}</h2>
         </header>
 
-        <div ref={viewportRef} className="mt-12 overflow-hidden">
+        {/* py-10 gives TILT_3D room to rotate without hitting this overflow
+            clip. overflow-x must stay hidden so the horizontal track does not
+            leak; the matching vertical padding is what keeps the tilt inside. */}
+        <div ref={viewportRef} className="mt-8 overflow-hidden py-10">
+          {/* Right padding on a flex row is dropped from scrollWidth in most
+              browsers, so the last card would pin flush to the clip. A shrink-0
+              ::after spacer is included in overflow, matching the left inset. */}
           <div
             ref={trackRef}
-            className="flex gap-6 px-[var(--section-padding-inline)] will-change-transform"
+            className="flex gap-6 pl-[var(--section-padding-inline)] will-change-transform after:block after:w-[var(--section-padding-inline)] after:shrink-0 after:content-['']"
           >
             {entries.map((entry, index) => (
               <div key={entry.id} className="w-[min(78vw,26rem)] shrink-0">
@@ -72,26 +76,12 @@ export function DesktopExperience({
           </div>
         </div>
 
-        <div className="section-inner mt-10">
+        <div className="section-inner mt-6">
           <ScrollTrace
             count={entries.length}
             fillRef={traceFillRef}
             registerNode={registerNode}
           />
-        </div>
-
-        {/* Horizontal progress indicator, in place of the vertical scroll cue
-            the other sections use. */}
-        <div className="section-inner mt-10">
-          <span
-            aria-hidden="true"
-            className="relative block h-px w-24 bg-[var(--border-hairline)]"
-          >
-            <span
-              ref={progressFillRef}
-              className="absolute inset-0 block origin-left scale-x-0 bg-signal"
-            />
-          </span>
         </div>
       </div>
     </div>

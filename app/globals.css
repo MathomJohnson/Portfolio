@@ -16,7 +16,7 @@
   --text-tertiary: #5c5c61; /* captions, mono labels, low emphasis */
 
   --accent-signal: #e8a33d; /* signature warm amber — "phosphor" accent */
-  --accent-signal-soft: rgba(232, 163, 61, 0.14); /* glow fields, spotlights */
+  --accent-signal-soft: rgba(232, 163, 61, 0.14); /* glow fields, cursor bloom */
   --accent-signal-dim: #7a5726; /* borders/dividers at low intensity */
 
   --border-hairline: rgba(242, 241, 237, 0.08);
@@ -40,8 +40,8 @@
   --section-max-width: 76rem;
 }
 
-/* Pointer-only affordances. CURSOR_TRACE, MAGNETIC_PULL, SPOTLIGHT_FIELD and
-   TILT_3D are absent on touch rather than degraded. */
+/* Pointer-only affordances. CURSOR_TRACE, MAGNETIC_PULL and TILT_3D are absent
+   on touch rather than degraded. */
 @custom-variant pointer-fine (@media (hover: hover) and (pointer: fine));
 
 @theme inline {
@@ -196,34 +196,18 @@
     transition-timing-function: var(--ease-signal);
   }
 
-  /* SPOTLIGHT_FIELD. The container glow tracks --x/--y; each item brightens
-     from its resting state as --proximity rises. Both properties are written by
-     SpotlightField.tsx and are only ever set on pointer-fine devices, so the
-     resting state below is what touch users see. */
-  .spotlight-field {
-    position: relative;
-  }
-
-  .spotlight-field::before {
-    content: "";
-    position: absolute;
-    /* Kept inside the container: an inset bleed would push past the viewport
-       edge and create horizontal overflow on narrow screens. */
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    opacity: var(--spotlight-opacity, 0);
-    transition: opacity 240ms ease-out;
-    background: radial-gradient(
-      18rem circle at var(--x, -100rem) var(--y, -100rem),
-      var(--accent-signal-soft),
-      transparent 70%
-    );
-  }
-
-  .spotlight-field > * {
-    position: relative;
-    z-index: 1;
+  /* TERMINAL_PRINT cursor. A solid amber block that sits at the end of the line
+     currently being printed. steps(1, end) gives the hard on/off of a hardware
+     cursor rather than a fade. */
+  .terminal-cursor {
+    display: inline-block;
+    width: 0.5em;
+    height: 1em;
+    margin-left: 0.15em;
+    vertical-align: -0.1em;
+    background-color: var(--accent-signal);
+    box-shadow: 0 0 10px 1px var(--accent-signal-soft);
+    animation: terminal-blink 1.06s steps(1, end) infinite;
   }
 
   /* SCROLL_TRACE nodes. data-active is toggled by the Experience scrub timeline
@@ -265,23 +249,133 @@
     }
   }
 
-  [data-spotlight-item] {
-    --proximity: 0;
-    color: color-mix(
-      in oklab,
-      var(--text-secondary),
-      var(--text-primary) calc(var(--proximity) * 100%)
+  /* AURA_FOLLOW. Three offset gradient layers, each blurred well past its own
+     edge, so the portrait sits in a pool of light rather than inside a drawn
+     shape. Positioning and blur are sized in percentages of the portrait, which
+     keeps the aura in proportion as the photo scales with the viewport.
+
+     Only the shapes breathe here; the drift toward the cursor is a transform on
+     the parent element in AuraFollow.tsx. Both would otherwise write to
+     `transform` on the same element and cancel each other out. */
+  .aura-layer {
+    position: absolute;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  /* Each layer is offset in a different direction rather than sitting concentric
+     with the portrait. Concentric layers read as a halo, which is the ring this
+     replaced; pulling them off-centre is what makes the light feel like it has a
+     source rather than an outline. */
+  .aura-layer--glow {
+    top: -46%;
+    right: -58%;
+    bottom: -58%;
+    left: -46%;
+    border-radius: 58% 42% 47% 53% / 44% 56% 44% 56%;
+    background: radial-gradient(
+      closest-side,
+      color-mix(in oklab, var(--accent-signal) 42%, transparent),
+      color-mix(in oklab, var(--accent-signal) 16%, transparent) 58%,
+      transparent 84%
     );
-    border-color: color-mix(
-      in oklab,
-      var(--border-hairline),
-      var(--accent-signal-dim) calc(var(--proximity) * 100%)
+    filter: blur(52px);
+    animation: aura-drift-outer 26s ease-in-out infinite alternate;
+  }
+
+  .aura-layer--bloom {
+    top: -52%;
+    right: -34%;
+    bottom: -30%;
+    left: -48%;
+    border-radius: 46% 54% 63% 37% / 55% 40% 60% 45%;
+    background: radial-gradient(
+      closest-side,
+      color-mix(in oklab, var(--accent-signal) 38%, transparent),
+      color-mix(in oklab, var(--accent-signal) 12%, transparent) 62%,
+      transparent 78%
     );
-    background-color: color-mix(
-      in oklab,
-      var(--bg-surface),
-      var(--bg-surface-raised) calc(var(--proximity) * 100%)
+    filter: blur(44px);
+    animation: aura-drift-middle 19s ease-in-out infinite alternate;
+  }
+
+  .aura-layer--core {
+    top: -22%;
+    right: -30%;
+    bottom: -34%;
+    left: -20%;
+    border-radius: 54% 46% 40% 60% / 47% 58% 42% 53%;
+    background: radial-gradient(
+      closest-side,
+      color-mix(in oklab, var(--accent-signal) 52%, transparent),
+      transparent 72%
     );
+    filter: blur(30px);
+    animation: aura-drift-inner 14s ease-in-out infinite alternate;
+  }
+
+}
+
+@keyframes terminal-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* AURA_FOLLOW shape breathing. Scale and rotation stay small; the border-radius
+   morph is what keeps the silhouette from resolving into a recognisable
+   ellipse. Each layer runs at a different period so they never re-align. */
+
+@keyframes aura-drift-outer {
+  0% {
+    transform: rotate(0deg) scale(1);
+    border-radius: 58% 42% 47% 53% / 44% 56% 44% 56%;
+  }
+  50% {
+    transform: rotate(9deg) scale(1.07);
+    border-radius: 43% 57% 60% 40% / 57% 41% 59% 43%;
+  }
+  100% {
+    transform: rotate(-7deg) scale(0.97);
+    border-radius: 52% 48% 38% 62% / 39% 60% 40% 61%;
+  }
+}
+
+@keyframes aura-drift-middle {
+  0% {
+    transform: rotate(0deg) scale(1);
+    border-radius: 46% 54% 63% 37% / 55% 40% 60% 45%;
+  }
+  50% {
+    transform: rotate(-11deg) scale(1.05);
+    border-radius: 62% 38% 45% 55% / 41% 58% 42% 59%;
+  }
+  100% {
+    transform: rotate(6deg) scale(0.98);
+    border-radius: 39% 61% 56% 44% / 60% 45% 55% 40%;
+  }
+}
+
+@keyframes aura-drift-inner {
+  0% {
+    transform: rotate(0deg) scale(1);
+    border-radius: 54% 46% 40% 60% / 47% 58% 42% 53%;
+    opacity: 0.8;
+  }
+  50% {
+    transform: rotate(7deg) scale(1.08);
+    border-radius: 41% 59% 57% 43% / 61% 44% 56% 39%;
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(-9deg) scale(0.96);
+    border-radius: 60% 40% 48% 52% / 44% 56% 44% 56%;
+    opacity: 0.9;
   }
 }
 
@@ -299,5 +393,18 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* Removed rather than frozen. The blanket rule above would settle these on
+     their final keyframe, which is a rotated, rescaled shape; the intended
+     static state is the resting one declared on the class. */
+  .aura-layer {
+    animation: none !important;
+  }
+
+  /* Also removed rather than frozen: the blanket rule would land the cursor on
+     its final keyframe, which is the invisible half of the blink. */
+  .terminal-cursor {
+    animation: none !important;
   }
 }

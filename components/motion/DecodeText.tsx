@@ -3,7 +3,7 @@
 import { useInView } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import { revealViewport } from "@/lib/motion-tokens";
+import { motionTokens, revealViewport } from "@/lib/motion-tokens";
 import { motionTags, type MotionTag } from "./tags";
 
 interface DecodeTextProps {
@@ -17,8 +17,6 @@ interface DecodeTextProps {
 
 const GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+=<>/\\";
 
-/** Seconds before each successive character locks to its real value. */
-const SECONDS_PER_CHARACTER = 0.035;
 /** Milliseconds between re-randomising the not-yet-locked characters. */
 const SCRAMBLE_INTERVAL_MS = 55;
 
@@ -62,7 +60,13 @@ export function DecodeText({
 
     const characters = Array.from(text);
     const startTime = performance.now() + delay * 1000;
-    const lockAll = characters.length * SECONDS_PER_CHARACTER;
+
+    // Derived from the total rather than fixed per character, so a string of any
+    // length takes durationDecode to resolve instead of getting faster or slower
+    // with the length of the copy.
+    const secondsPerCharacter =
+      motionTokens.durationDecode / Math.max(characters.length, 1);
+    const lockAll = characters.length * secondsPerCharacter;
 
     let frame = 0;
     let lastScramble = 0;
@@ -85,7 +89,7 @@ export function DecodeText({
         characters
           .map((character, index) => {
             if (character === " ") return character;
-            const lockTime = index * SECONDS_PER_CHARACTER;
+            const lockTime = index * secondsPerCharacter;
             return elapsed >= lockTime ? character : scrambled[index];
           })
           .join(""),

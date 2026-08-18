@@ -6,14 +6,14 @@
  * plain serializable data; the UI layer maps names to lucide-react components.
  */
 
-export type SocialIconName = "linkedin" | "github" | "mail";
+export type SocialIconName = "linkedin" | "github" | "youtube";
 
 export type InterestIconName =
   | "sigma"
   | "microscope"
   | "code"
-  | "cpu"
-  | "activity";
+  | "landmark"
+  | "tennis";
 
 export interface SocialLink {
   id: string;
@@ -33,6 +33,8 @@ export interface InterestItem {
 export interface SkillCategory {
   id: string;
   label: string;
+  /** Argument to `cat` in the printed prompt, e.g. "languages". */
+  filename: string;
   skills: string[];
 }
 
@@ -45,6 +47,11 @@ export interface ExperienceEntry {
   status?: "upcoming" | "present";
   bullets: string[];
   tags: string[];
+  /**
+   * Organization mark. Swap the file in `public/experience-logos/` (or point
+   * `src` at a JPEG) without touching the card markup.
+   */
+  logo: { src: string; alt: string };
 }
 
 export interface HeroContent {
@@ -80,18 +87,15 @@ export interface ContactContent {
   linkedIn: { href: string; label: string };
 }
 
-/** [DRAFT] Confirm the exact address before ship. */
-export const emailAddress = "hello@example.com";
+export const emailAddress = "mathomgj@gmail.com";
 
-/** [DRAFT] Confirm the LinkedIn profile URL before ship. */
-export const linkedInUrl = "https://www.linkedin.com/in/example";
+export const linkedInUrl = "https://www.linkedin.com/in/mathomjohnson/";
 
 export const githubUrl = "https://github.com/MathomJohnson";
 
-/**
- * [DRAFT] Hero and Contact share this row so Contact reads as a deliberate
- * bookend to Hero.
- */
+export const youtubeUrl =
+  "https://www.youtube.com/channel/UCPgHcSZgy6dNjFx23H2LWQg";
+
 export const socialLinks: SocialLink[] = [
   {
     id: "linkedin",
@@ -108,18 +112,18 @@ export const socialLinks: SocialLink[] = [
     external: true,
   },
   {
-    id: "email",
-    label: "Email me",
-    href: `mailto:${emailAddress}`,
-    icon: "mail",
-    external: false,
+    id: "youtube",
+    label: "YouTube channel",
+    href: youtubeUrl,
+    icon: "youtube",
+    external: true,
   },
 ];
 
 export const heroContent: HeroContent = {
   // [DRAFT] Confirm full display name.
   name: "Mathom Johnson",
-  subtitle: "CS + Data Science @ UW–Madison",
+  subtitle: "Computer Science & Data Science @ UW—Madison",
   resume: { href: "/resume.pdf", label: "Resume" },
 };
 
@@ -140,21 +144,25 @@ export const aboutContent: AboutContent = {
     alt: "Mathom Johnson working at a desk",
     width: 900,
     height: 1200,
-  },
+  },    
   paragraphs: [
-    "I am a co-founder and founding engineer at Praxora Education, an AI-powered OSCE practice platform for medical students, where I am currently building out production infrastructure.",
-    "I recently completed a software engineering internship at U.S. Bank on the Power BI / BI Tools team, and I am heading into an embedded systems co-op at Plexus this fall. Alongside that, I am involved in behavioral neuroscience ML research at the Ehrlich Lab.",
-    "Outside of engineering: endurance sports — marathon and Ironman training — and hardware projects.",
+    "My name is Mathom, and I'm a Senior at the University of Wisconsin–Madison.",
+    "I'm a co-founder and founding engineer at Praxora, a pre-seed funded OSCE practice platform for medical students. This Summer I completed a software engineering internship at U.S. Bank on the Microsoft Fabric Tools team, and this Fall I'm doing an embedded systems engineering co-op at Plexus.",
+    "Outside of engineering, I like exploring nature through hiking, swimming, and paddleboarding. I play soccer and tennis. And when I'm not doing that, I'm probably spending too much time watching Dave Ramsey and picking funds for my Roth IRA.",
   ],
   interests: [
     { id: "math-data", label: "Math / Data", icon: "sigma" },
     { id: "science", label: "Science / Research", icon: "microscope" },
     { id: "software", label: "Software Engineering", icon: "code" },
-    { id: "hardware", label: "Hardware / Embedded", icon: "cpu" },
-    { id: "endurance", label: "Endurance Sports", icon: "activity" },
+    { id: "finance", label: "Finance / Economics", icon: "landmark" },
+    { id: "sports", label: "Sports", icon: "tennis" },
   ],
 };
 
+/**
+ * Categories printed left to right by TERMINAL_PRINT. Column order is array
+ * order, so reordering here reorders the print sequence.
+ */
 export const skillsContent: SkillsContent = {
   eyebrow: "02 / Skills",
   heading: "Skills",
@@ -162,41 +170,67 @@ export const skillsContent: SkillsContent = {
     {
       id: "languages",
       label: "Languages",
-      skills: ["Python", "TypeScript", "SQL", "C/C++"],
-    },
-    {
-      id: "frameworks",
-      label: "Frameworks & Web",
-      skills: ["FastAPI", "Next.js / React", "Node.js"],
-    },
-    {
-      id: "infra",
-      label: "Infra & Data",
+      filename: "languages",
       skills: [
-        "Supabase",
-        "PostgreSQL",
-        "Redis",
-        "Docker",
-        "Railway",
-        "Vercel",
+        "Python",
+        "Java",
+        "JavaScript",
+        "TypeScript",
+        "C",
+        "SQL",
+        "R",
+        "MATLAB",
+        "PowerShell",
       ],
     },
     {
-      id: "data-engineering",
-      label: "Data Engineering",
-      skills: ["Kafka", "Spark", "Cassandra", "gRPC"],
+      id: "frameworks",
+      label: "Frameworks & Libraries",
+      filename: "frameworks",
+      skills: [
+        "FastAPI",
+        "Flask",
+        "Django",
+        ".NET",
+        "Node.js",
+        "Next.js",
+        "React",
+        "scikit-learn",
+        "HTML/CSS",
+      ],
     },
     {
-      id: "embedded",
-      label: "Embedded",
-      skills: ["ESP32", "Embedded C", "Sensor Integration (IMU)"],
+      id: "databases",
+      label: "Databases & Data Stores",
+      filename: "databases",
+      skills: ["PostgreSQL", "MongoDB", "SQLite", "Redis", "ChromaDB"],
+    },
+    {
+      id: "infra",
+      label: "Cloud, Infra & Hardware",
+      filename: "infra",
+      skills: [
+        "Supabase",
+        "Railway",
+        "Vercel",
+        "GCP",
+        "ESP32",
+        "Raspberry Pi",
+        "Linux",
+      ],
+    },
+    {
+      id: "tools",
+      label: "Dev & AI Tools",
+      filename: "tools",
+      skills: ["Git", "Cursor", "Claude Code", "Codex", "Ollama"],
     },
   ],
 };
 
 /**
- * [DRAFT] Order follows the source spec. Confirm ordering and exact dates —
- * Praxora is an ongoing role listed after two later-dated entries.
+ * Order is upcoming / most recent first. Praxora is an ongoing role listed
+ * after later-dated internships.
  */
 export const experienceContent: ExperienceContent = {
   eyebrow: "03 / Experience",
@@ -211,56 +245,77 @@ export const experienceContent: ExperienceContent = {
       bullets: [
         "Joining the embedded systems team to work on firmware and hardware-adjacent development.",
       ],
-      // [DRAFT] Confirm stack.
       tags: ["Embedded C"],
+      logo: { src: "/experience-logos/plexus.png", alt: "Plexus logo" },
     },
     {
       id: "us-bank",
       organization: "U.S. Bank",
-      role: "Software Engineer Intern, Power BI Data Management / BI Tools",
-      dateRange: "Summer 2026",
+      role: "Software Engineer Intern",
+      dateRange: "Jun. 2026 – Aug. 2026",
       bullets: [
-        "Researched Microsoft Fabric AI capabilities, including Fabric Data Agents and Copilot in Power BI.",
-        "Built a capacity monitoring tool spanning 1,000+ Fabric workspaces.",
-        "Placed 1st of 28 teams in the company-wide intern pitch competition.",
+        "Investigated a PostgreSQL connection pooling incident caused by mismatched client/server configs, then built standardized pooling modules to prevent recurrence.",
+        "Built a Python capacity monitoring tool across 1,000+ Fabric workspaces to flag inefficient workloads.",
+        "Researched Microsoft Fabric AI capabilities and presented findings to 1,300+ employees.",
       ],
-      tags: ["Power BI", "Microsoft Fabric", "Tableau", "Alteryx"],
+      tags: ["Python", "PostgreSQL", "Microsoft Fabric", "Power BI"],
+      logo: { src: "/experience-logos/us-bank.png", alt: "U.S. Bank logo" },
     },
     {
       id: "praxora",
       organization: "Praxora Education, Inc.",
-      role: "Co-Founder & Founding Engineer",
+      role: "Co-Founder & Engineer",
       // No status badge: the date range already reads as ongoing, and showing
       // both renders as "Present (Present)".
-      dateRange: "Present",
+      dateRange: "Oct. 2025 – Present",
       bullets: [
-        "Building the OSCE practice platform for medical students end to end.",
-        "Running production infrastructure on FastAPI, Supabase, Redis, and Railway.",
-        "Board member.",
+        "Co-founded an incorporated ed-tech startup that has secured $30,000 in funding; serve on the board of directors.",
+        "Designed core software and backend architecture (FastAPI, Supabase, Railway, Vercel) and made foundational stack decisions.",
+        "Shipped full-stack features including REST APIs, Redis rate limiting, edge functions, and transactional email.",
       ],
-      tags: ["FastAPI", "Supabase", "Redis", "Railway"],
+      tags: ["FastAPI", "Supabase", "Redis", "Railway", "Vercel"],
+      logo: { src: "/experience-logos/praxora.jpeg", alt: "Praxora logo" },
+    },
+    {
+      id: "morgridge",
+      organization: "Morgridge Institute for Research",
+      role: "Undergraduate Researcher, Embedded Systems",
+      dateRange: "Sep. 2025 – May 2026",
+      bullets: [
+        "Designed control dashboard features to regulate cathode heaters and high-voltage components in a research-grade 3D metal printer.",
+        "Developed hardware–software interface tests to validate reliability, enforce safety protocols, and ensure reproducible performance.",
+      ],
+      tags: ["Embedded Systems", "Hardware", "Testing"],
+      logo: {
+        src: "/experience-logos/MIR.jpeg",
+        alt: "Morgridge Institute for Research logo",
+      },
     },
     {
       id: "ehrlich-lab",
       organization: "Ehrlich Lab, UW–Madison",
-      role: "Research",
-      // [DRAFT] Dates to confirm.
-      dateRange: "Dates to confirm",
+      role: "Undergraduate Researcher, Data Analysis",
+      dateRange: "Feb. 2025 – May 2026",
       bullets: [
-        "Built an ML pipeline for zebrafish behavioral data.",
+        "Developed Python/MATLAB scripts and analysis pipelines to process behavioral data for a life sciences research initiative.",
+        "Designed experimental hardware with Arduino and IoT components for a larval zebrafish behavioral assay.",
+        "Engineered an ML-driven CLI that classified key behavioral movements and more than doubled processing speed.",
       ],
-      tags: ["Python", "ML Pipeline"],
+      tags: ["Python", "MATLAB", "Arduino", "Machine Learning"],
+      logo: { src: "/experience-logos/uw-madison.png", alt: "University of Wisconsin–Madison logo" },
     },
     {
-      id: "personaxr",
-      organization: "PersonaXR (UW Tech Exploration Lab)",
-      role: "Technical Contributor",
-      // [DRAFT] Dates to confirm.
-      dateRange: "Dates to confirm",
+      id: "wec",
+      organization: "WEC Energy Group",
+      role: "Software Development Intern",
+      dateRange: "May 2025 – Aug. 2025",
       bullets: [
-        "Designed backend AI architecture for a personality scoring and matching system.",
+        "Interpreted UML diagrams, database schemas, and interface classes for a data pipeline that stores over 2,200 objects daily.",
+        "Designed unit and integration test suites that raised code coverage to 92%.",
+        "Refactored and modularized core functions to improve reusability, testability, and adherence to design patterns.",
       ],
-      tags: ["Claude API", "Backend Architecture"],
+      tags: ["Data Pipeline", "Testing", "Agile"],
+      logo: { src: "/experience-logos/wec.png", alt: "WEC Energy Group logo" },
     },
   ],
 };

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { FadeUp } from "@/components/motion/FadeUp";
 import { SignalReveal } from "@/components/motion/SignalReveal";
@@ -48,22 +49,35 @@ export function ExperienceCard({
         onBlur={() => setActive(false)}
         className="flex h-full flex-col rounded-xl border border-hairline bg-surface p-7 transition-tint hover:border-hairline-strong md:p-8"
       >
-        <p className="mono-label flex flex-wrap items-center gap-3">
-          <span>{entry.dateRange}</span>
-          {entry.status && (
-            <span className="rounded-full border border-signal-dim px-2 py-0.5 text-[0.625rem] text-signal">
-              {statusLabels[entry.status]}
-            </span>
-          )}
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="mono-label flex flex-wrap items-center gap-3">
+              <span>{entry.dateRange}</span>
+              {entry.status && (
+                <span className="rounded-full border border-signal-dim px-2 py-0.5 text-[0.625rem] text-signal">
+                  {statusLabels[entry.status]}
+                </span>
+              )}
+            </p>
 
-        <SignalReveal
-          as="h3"
-          delay={index * motionTokens.staggerBase}
-          className="mt-4 font-display text-2xl text-primary"
-        >
-          {entry.organization}
-        </SignalReveal>
+            <SignalReveal
+              as="h3"
+              delay={index * motionTokens.staggerBase}
+              className="mt-4 font-display text-2xl text-primary"
+            >
+              {entry.organization}
+            </SignalReveal>
+          </div>
+
+          <Image
+            src={entry.logo.src}
+            alt={entry.logo.alt}
+            width={40}
+            height={40}
+            unoptimized={entry.logo.src.endsWith(".svg")}
+            className="mt-0.5 size-10 shrink-0 rounded-lg"
+          />
+        </div>
 
         <SignalReveal
           as="p"

@@ -1,4 +1,4 @@
-import { Activity, Code2, Cpu, Mail, Microscope, Sigma } from "lucide-react";
+import { Code2, Landmark, Microscope, Sigma } from "lucide-react";
 import type { InterestIconName, SocialIconName } from "@/lib/content";
 
 type GlyphProps = {
@@ -46,8 +46,22 @@ function GitHubGlyph({ className }: GlyphProps) {
   );
 }
 
-function MailGlyph({ className }: GlyphProps) {
-  return <Mail className={className} strokeWidth={1.75} aria-hidden="true" />;
+function YouTubeGlyph({ className }: GlyphProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <rect x="2.5" y="6" width="19" height="12" rx="3.5" />
+      <path d="M10 9.5v5l5-2.5Z" />
+    </svg>
+  );
 }
 
 export const socialGlyphs: Record<
@@ -56,7 +70,7 @@ export const socialGlyphs: Record<
 > = {
   linkedin: LinkedInGlyph,
   github: GitHubGlyph,
-  mail: MailGlyph,
+  youtube: YouTubeGlyph,
 };
 
 export const interestGlyphs: Record<
@@ -72,10 +86,27 @@ export const interestGlyphs: Record<
   code: ({ className }) => (
     <Code2 className={className} strokeWidth={1.5} aria-hidden="true" />
   ),
-  cpu: ({ className }) => (
-    <Cpu className={className} strokeWidth={1.5} aria-hidden="true" />
+  landmark: ({ className }) => (
+    <Landmark className={className} strokeWidth={1.5} aria-hidden="true" />
   ),
-  activity: ({ className }) => (
-    <Activity className={className} strokeWidth={1.5} aria-hidden="true" />
-  ),
+  tennis: ({ className }) => <TennisGlyph className={className} />,
 };
+
+function TennisGlyph({ className }: GlyphProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M6.4 5.2c4.2 2.6 4.2 11 0 13.6" />
+      <path d="M17.6 5.2c-4.2 2.6-4.2 11 0 13.6" />
+    </svg>
+  );
+}

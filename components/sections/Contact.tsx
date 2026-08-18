@@ -1,13 +1,12 @@
+import { ChevronUp } from "lucide-react";
 import { MagneticWrap } from "@/components/motion/MagneticWrap";
 import { SignalReveal } from "@/components/motion/SignalReveal";
 import { Button } from "@/components/ui/Button";
-import { SocialLinks } from "@/components/ui/SocialLinks";
-import { contactContent, sectionIds, socialLinks } from "@/lib/content";
+import { contactContent, sectionIds } from "@/lib/content";
 
 /**
- * Contact — centred closing line, mailto call to action, LinkedIn link, and a
- * footer social row that bookends Hero's. No scroll cue: this is the last
- * section.
+ * Contact — centred closing line, mailto call to action, LinkedIn, and a
+ * back-to-top control. No scroll cue: this is the last section.
  */
 export function Contact() {
   return (
@@ -44,7 +43,13 @@ export function Contact() {
 
       <footer className="section-inner mt-20 flex flex-col items-center gap-6">
         <div className="hairline-top w-full max-w-md" />
-        <SocialLinks links={socialLinks} label="Social links" size="footer" />
+        <a
+          href={`#${sectionIds.hero}`}
+          className="mono-label inline-flex items-center gap-2 text-secondary transition-tint hover:text-signal"
+        >
+          <ChevronUp className="size-4" strokeWidth={1.75} aria-hidden="true" />
+          Back to top
+        </a>
       </footer>
     </section>
   );
