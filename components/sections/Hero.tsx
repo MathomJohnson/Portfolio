@@ -65,7 +65,7 @@ export function Hero() {
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-5 md:justify-start">
             <MagneticWrap>
-              <Button href={heroContent.resume.href} download>
+              <Button href={heroContent.resume.href} external>
                 {heroContent.resume.label}
               </Button>
             </MagneticWrap>

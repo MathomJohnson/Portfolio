@@ -5,8 +5,6 @@ interface ButtonProps {
   children: ReactNode;
   icon?: ReactNode;
   variant?: "primary" | "ghost";
-  /** Marks the link as a file download (used for the resume). */
-  download?: boolean;
   external?: boolean;
   className?: string;
 }
@@ -30,14 +28,12 @@ export function Button({
   children,
   icon,
   variant = "primary",
-  download = false,
   external = false,
   className = "",
 }: ButtonProps) {
   return (
     <a
       href={href}
-      download={download || undefined}
       target={external ? "_blank" : undefined}
       rel={external ? "noreferrer noopener" : undefined}
       className={`${baseClasses} ${variantClasses[variant]} ${className}`}

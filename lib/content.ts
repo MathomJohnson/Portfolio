@@ -124,7 +124,7 @@ export const heroContent: HeroContent = {
   // [DRAFT] Confirm full display name.
   name: "Mathom Johnson",
   subtitle: "Computer Science & Data Science @ UW—Madison",
-  resume: { href: "/resume.pdf", label: "Resume" },
+  resume: { href: "/mathom_resume.pdf", label: "Resume" },
 };
 
 export const heroPhoto = {

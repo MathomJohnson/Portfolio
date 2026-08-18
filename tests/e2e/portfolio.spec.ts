@@ -122,9 +122,9 @@ test.describe("content and structure", () => {
         .first(),
     ).toBeAttached();
 
-    await expect(
-      page.getByRole("link", { name: "Resume" }).first(),
-    ).toHaveAttribute("href", "/resume.pdf");
+    const resume = page.getByRole("link", { name: "Resume" }).first();
+    await expect(resume).toHaveAttribute("href", "/mathom_resume.pdf");
+    await expect(resume).toHaveAttribute("target", "_blank");
 
     const heroSocials = page
       .getByRole("list", { name: "Social links" })
