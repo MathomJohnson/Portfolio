@@ -270,7 +270,7 @@ test.describe("scroll reveals resolve", () => {
   }) => {
     await page.goto("/");
 
-    for (const id of ["about", "skills", "contact"]) {
+    for (const id of ["about", "skills"]) {
       const heading = page.locator(`#${id} h2`).first();
       await heading.scrollIntoViewIfNeeded();
       await page.waitForTimeout(1200);
@@ -307,6 +307,28 @@ test.describe("scroll reveals resolve", () => {
       });
 
     // The hidden state collapses the polygon to zero width on the left edge.
+    expect(wiped).not.toBe("polygon(0% 0%, 0% 0%, -20% 100%, -20% 100%)");
+  });
+
+  test("the contact photo replaces the closing quote and finishes its wipe", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    await expect(
+      page.getByText("Building things that work, and understanding why they do."),
+    ).toHaveCount(0);
+
+    const photo = page.locator("#contact img");
+    await photo.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1200);
+    await expect(photo).toBeVisible();
+
+    const wiped = await photo.evaluate((image) => {
+      const masked = image.closest("[style*='clip-path']") as HTMLElement | null;
+      return masked ? getComputedStyle(masked).clipPath : "none";
+    });
+
     expect(wiped).not.toBe("polygon(0% 0%, 0% 0%, -20% 100%, -20% 100%)");
   });
 });
