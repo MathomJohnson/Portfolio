@@ -161,7 +161,7 @@ third of the page's character.
 | About | `PARALLAX_DRIFT` + `WIPE_MASK` (photo), `SIGNAL_REVEAL` (heading), `FADE_UP` (bio lines), `ICON_LIFT` (interest row), `SCROLL_CUE` |
 | Skills | `TERMINAL_PRINT` (columns, left to right), `SIGNAL_REVEAL` (heading) |
 | Experience | `HORIZONTAL_PIN`, `SCROLL_TRACE`, `SIGNAL_REVEAL` (role/title), `FADE_UP` (bullets), `TILT_3D` (card hover), `TAG_STAGGER` (tag rows) |
-| Contact | `SIGNAL_REVEAL` (closing line), `MAGNETIC_PULL` (mailto + LinkedIn) |
+| Contact | `WIPE_MASK` (photo), `MAGNETIC_PULL` (mailto + LinkedIn) |
 
 ## Accessibility non-negotiables
 

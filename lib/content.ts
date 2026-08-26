@@ -82,7 +82,7 @@ export interface ExperienceContent {
 
 export interface ContactContent {
   eyebrow: string;
-  closingLine: string;
+  photo: { src: string; alt: string; width: number; height: number };
   cta: { href: string; label: string };
   linkedIn: { href: string; label: string };
 }
@@ -322,8 +322,12 @@ export const experienceContent: ExperienceContent = {
 
 export const contactContent: ContactContent = {
   eyebrow: "04 / Contact",
-  // [DRAFT] Confirm which closing line ships.
-  closingLine: "Building things that work, and understanding why they do.",
+  photo: {
+    src: "/ridge-contact.jpg",
+    alt: "Mathom Johnson sitting on a grassy alpine ridge, looking out over a forested valley and mountain range",
+    width: 1920,
+    height: 1440,
+  },
   cta: { href: `mailto:${emailAddress}`, label: "Say hello" },
   linkedIn: { href: linkedInUrl, label: "LinkedIn" },
 };
