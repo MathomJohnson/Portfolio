@@ -14,8 +14,9 @@ interface ExperienceCardProps {
   /** Position in the list, used to offset the card's reveals. */
   index: number;
   /**
-   * Enables the hover-only affordances (TILT_3D and TAG_STAGGER). The vertical
-   * mobile layout passes false so its cards stay flat and its tags stay visible.
+   * Enables the hover-only tag cascade (TAG_STAGGER). The vertical layout
+   * passes false so its tags stay visible. TILT_3D runs in both layouts;
+   * TiltCard itself switches off on touch and under reduced motion.
    */
   interactive?: boolean;
 }
@@ -41,7 +42,9 @@ export function ExperienceCard({
   const [active, setActive] = useState(false);
 
   return (
-    <TiltCard enabled={interactive} className="h-full">
+    // Vertical-layout cards are ~2.5x wider, so the same angle would swing
+    // their edges much further; 2° matches the feel of 5° on the narrow card.
+    <TiltCard maxDegrees={interactive ? 5 : 2} className="h-full">
       <article
         onPointerEnter={() => setActive(true)}
         onPointerLeave={() => setActive(false)}

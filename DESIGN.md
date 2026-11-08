@@ -66,7 +66,8 @@ multiples.
 
 Every section is `min-height: 100svh` (not `100vh` — `svh` avoids mobile browser
 chrome jump issues), except the Experience section, which pins at `100svh` and
-holds while its horizontal content scrubs. Section content sits inside a
+holds while its horizontal content scrubs (only on screens tall enough to fit a
+whole card; shorter ones get the vertical list). Section content sits inside a
 safe-padding wrapper: `padding-block: min(10vh, 96px)` so nothing touches the
 viewport edge on short screens. The `.section-shell` and `.section-inner`
 classes in `app/globals.css` implement this.

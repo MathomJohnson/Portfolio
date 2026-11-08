@@ -32,10 +32,18 @@ import { motionTokens } from "@/lib/motion-tokens";
  * box the row centres is the ink.
  *
  * The subtitle's DECODE_TEXT starts after the name's SIGNAL_REVEAL has resolved.
+ *
+ * The section clips horizontally because the aura's blur reaches past the edges
+ * of narrow phones and would otherwise widen the page. `clip`, unlike `hidden`,
+ * leaves the glow free to spill vertically.
  */
 export function Hero() {
   return (
-    <SectionShell id={sectionIds.hero} cueTargetId={sectionIds.about}>
+    <SectionShell
+      id={sectionIds.hero}
+      cueTargetId={sectionIds.about}
+      className="overflow-x-clip"
+    >
       <div className="flex flex-col items-center gap-12 md:mx-auto md:w-fit md:flex-row md:gap-10 lg:gap-14">
         <AuraFollow className="shrink-0">
           <div className="relative aspect-square w-[clamp(11rem,26vw,16rem)] overflow-hidden rounded-full">

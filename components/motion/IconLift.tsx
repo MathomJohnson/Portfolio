@@ -37,9 +37,10 @@ const circleClasses =
  * The label is always in the DOM so assistive technology always reads it. On
  * pointer-fine devices it is positioned and revealed as a tooltip. On touch the
  * in-flow caption is hidden; tapping the icon opens a chip (owned by the
- * parent so only one is visible). Closed chips use `display: none` so a
- * `whitespace-nowrap` label cannot widen the page. Under reduced motion the
- * lift and stagger are dropped and only opacity animates.
+ * parent so only one is visible). An open chip is capped at 7rem so a long
+ * label wraps instead of running off the edge of a narrow phone; closed chips
+ * use `display: none`. Under reduced motion the lift and stagger are dropped
+ * and only opacity animates.
  */
 export function IconLift({
   icon,
@@ -87,7 +88,7 @@ export function IconLift({
       ) : (
         <motion.span
           aria-hidden="true"
-          className={`mono-label pointer-events-none absolute top-full z-10 mt-2 whitespace-nowrap rounded-lg border border-hairline bg-surface px-3 py-1.5 text-[0.6875rem] ${open ? "" : "hidden"}`}
+          className={`mono-label pointer-events-none absolute top-full z-10 mt-2 w-max max-w-[7rem] rounded-lg text-center border border-hairline bg-surface px-3 py-1.5 text-[0.6875rem] ${open ? "" : "hidden"}`}
           initial={false}
           animate={{ opacity: open ? 1 : 0 }}
           transition={microTransition()}

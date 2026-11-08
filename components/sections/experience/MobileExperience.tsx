@@ -12,8 +12,8 @@ interface MobileExperienceProps {
  * list with a static trace down the left edge.
  *
  * This is a genuine alternative layout rather than a shrunken pin. It is what
- * touch devices, narrow viewports and reduced-motion visitors get, so the
- * content is never dependent on scroll-jacking to reach.
+ * touch devices, narrow or short viewports and reduced-motion visitors get, so
+ * the content is never dependent on scroll-jacking to reach.
  */
 export function MobileExperience({
   entries,

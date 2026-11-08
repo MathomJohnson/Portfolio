@@ -63,7 +63,8 @@ tests/e2e/             Playwright specs and the screenshot capture pass
   exception among the signature effects: it is scroll-triggered, so it runs
   everywhere.
 - Experience has two real layouts. The pinned horizontal sequence renders only on
-  wide, hovering, fine-pointer devices without a reduced-motion preference;
+  wide, hovering, fine-pointer devices without a reduced-motion preference,
+  and only when the window is tall enough to show a whole card (`min-height`);
   everything else gets a vertical list. The CSS media query in `globals.css` and
   the `gsap.matchMedia` query in `hooks/useExperienceScroll.ts` must stay
   identical so the pinned markup is never shown without its scroll timeline.

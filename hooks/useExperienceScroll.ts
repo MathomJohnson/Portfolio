@@ -10,9 +10,16 @@ gsap.registerPlugin(ScrollTrigger);
  * Must stay identical to the .experience-desktop / .experience-mobile media
  * query in globals.css, so the pinned markup is only ever displayed when this
  * timeline is running.
+ *
+ * min-height is the pinned frame's measured content height (~834px: header,
+ * tallest card, trace) plus a margin. Below it the frame would have to shrink
+ * the card row and clip the cards, so shorter screens get the vertical list.
+ * It is in em so it scales with the user's font size, as the cards do. Raise it
+ * if card content grows; the "pinned cards are never clipped" e2e test catches
+ * that.
  */
 export const EXPERIENCE_PIN_QUERY =
-  "(min-width: 768px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
+  "(min-width: 768px) and (min-height: 53em) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
 
 interface UseExperienceScrollOptions {
   /** The 100svh frame that gets pinned. */

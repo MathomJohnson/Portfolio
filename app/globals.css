@@ -227,8 +227,9 @@
     box-shadow: 0 0 12px 2px var(--accent-signal-soft);
   }
 
-  /* The Experience section only pins on wide, hovering, fine-pointer devices
-     that have not asked for reduced motion. These two rules and the
+  /* The Experience section only pins on wide, tall-enough, hovering,
+     fine-pointer devices that have not asked for reduced motion (see
+     EXPERIENCE_PIN_QUERY for why the min-height). These two rules and the
      gsap.matchMedia query in useExperienceScroll.ts must stay in step, so the
      pinned tree is never displayed without its scroll timeline. */
   .experience-desktop {
@@ -239,7 +240,7 @@
     display: block;
   }
 
-  @media (min-width: 768px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  @media (min-width: 768px) and (min-height: 53em) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
     .experience-desktop {
       display: block;
     }

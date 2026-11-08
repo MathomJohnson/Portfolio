@@ -50,17 +50,18 @@ export function DesktopExperience({
     <div className="experience-desktop">
       <div
         ref={pinRef}
-        className="flex h-[100svh] flex-col justify-center overflow-hidden py-[var(--section-padding-block)]"
+        className="flex h-[100svh] flex-col justify-center overflow-hidden py-[min(6vh,3rem)]"
       >
         <header className="section-inner">
           <p className="mono-label text-signal">{eyebrow}</p>
           <h2 className="display-l mt-4">{heading}</h2>
         </header>
 
-        {/* py-10 gives TILT_3D room to rotate without hitting this overflow
-            clip. overflow-x must stay hidden so the horizontal track does not
-            leak; the matching vertical padding is what keeps the tilt inside. */}
-        <div ref={viewportRef} className="mt-8 overflow-hidden py-10">
+        {/* py-6 gives TILT_3D room to rotate without hitting this overflow
+            clip (5° on a full-height card moves its edges well under 24px).
+            overflow-x must stay hidden so the horizontal track does not leak;
+            the matching vertical padding is what keeps the tilt inside. */}
+        <div ref={viewportRef} className="mt-6 overflow-hidden py-6">
           {/* Right padding on a flex row is dropped from scrollWidth in most
               browsers, so the last card would pin flush to the clip. A shrink-0
               ::after spacer is included in overflow, matching the left inset. */}

@@ -384,6 +384,45 @@ test.describe("experience layout selection", () => {
 
     expect(desktopVisible).not.toBe(mobileVisible);
   });
+
+  test("pinned cards are never clipped by the frame", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop", "desktop project only");
+
+    // Below, near, and above the pin query's min-height.
+    const sizes = [
+      [1366, 700],
+      [1366, 860],
+      [1440, 900],
+      [1920, 1080],
+    ];
+    let pinnedSizes = 0;
+
+    for (const [width, height] of sizes) {
+      await page.setViewportSize({ width, height });
+      await page.goto("/");
+      if (await page.locator(".experience-mobile").isVisible()) continue;
+      pinnedSizes++;
+
+      const clipped = await page.evaluate(() => {
+        const viewport = document.querySelector(
+          ".experience-desktop .flex.gap-6",
+        )!.parentElement!;
+        const bottom =
+          viewport.getBoundingClientRect().bottom -
+          parseFloat(getComputedStyle(viewport).paddingBottom);
+
+        return [...document.querySelectorAll(".experience-desktop article")]
+          .filter((card) => card.getBoundingClientRect().bottom > bottom + 0.5)
+          .map((card) => card.querySelector("h3")?.textContent);
+      });
+
+      expect(clipped, `${width}x${height}`).toEqual([]);
+    }
+
+    expect(pinnedSizes).toBeGreaterThan(0);
+  });
 });
 
 test.describe("mobile", () => {
@@ -401,6 +440,27 @@ test.describe("mobile", () => {
     expect(pinned).toBe(0);
 
     await expect(page.locator("#experience ol > li")).toHaveCount(6);
+  });
+
+  test("narrow phones have no horizontal overflow", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "mobile", "mobile project only");
+
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.goto("/");
+
+    const overflow = () =>
+      page.evaluate(
+        () =>
+          document.documentElement.scrollWidth -
+          document.documentElement.clientWidth,
+      );
+    expect(await overflow()).toBeLessThanOrEqual(0);
+
+    // The edge interest chip has the longest label.
+    await page.getByRole("button", { name: "Software Engineering" }).click();
+    expect(await overflow()).toBeLessThanOrEqual(0);
   });
 
   test("tags are visible without hover", async ({ page }, testInfo) => {
@@ -476,6 +536,38 @@ test.describe("reduced motion", () => {
 });
 
 test.describe("desktop signature interactions", () => {
+  test("experience cards tilt toward the cursor in both layouts", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop", "desktop project only");
+
+    // Short enough for the vertical list, then tall enough to pin.
+    for (const [width, height] of [
+      [1366, 768],
+      [1440, 900],
+    ]) {
+      await page.setViewportSize({ width, height });
+      await page.goto("/");
+
+      const card = page
+        .locator("#experience article")
+        .filter({ visible: true })
+        .first();
+      await card.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(400);
+      const box = (await card.boundingBox())!;
+      await page.mouse.move(box.x + box.width * 0.9, box.y + box.height * 0.1, {
+        steps: 5,
+      });
+      await page.waitForTimeout(600);
+
+      const transform = await card.evaluate(
+        (element) => getComputedStyle(element.parentElement!).transform,
+      );
+      expect(transform, `${width}x${height}`).toContain("matrix3d");
+    }
+  });
+
   test("experience pins and scrubs cards horizontally", async ({
     page,
   }, testInfo) => {
